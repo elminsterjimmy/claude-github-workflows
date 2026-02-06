@@ -1,14 +1,18 @@
-# Claude GitHub Workflows
+# Claude GitHub Workflows (gw)
 
-Claude Code skills that integrate the **brainstorm → plan → work → review** lifecycle with GitHub issues and PRs.
+Claude Code skills that add GitHub issue/PR integration to the development lifecycle.
+
+**If compound-engineering plugin is installed:** Wraps `/workflows:*` commands with GitHub integration.
+
+**If compound-engineering is not installed:** Provides standalone workflow with GitHub integration.
 
 ## Features
 
-- **Brainstorm** creates GitHub issues from feature exploration
-- **Plan** updates issues with implementation plans
-- **Work** creates PRs linked to tracking issues
-- **Review Cycle** handles feedback and merges
-- **Compound Knowledge** captures learnings in `docs/solutions/`
+- `/gw:brainstorm` - Explore ideas, create GitHub issue
+- `/gw:plan` - Create implementation plan, update issue
+- `/gw:work` - Implement feature, create PR linked to issue
+- `/gw:review-cycle` - Handle PR review status
+- `/gw:compound` - Capture learnings, link to issue/PR
 
 ## Requirements
 
@@ -26,13 +30,13 @@ gh auth status || gh auth login
 
 1. Click "Use this template" on GitHub
 2. Clone your new repository
-3. Run `/workflows:brainstorm` to start
+3. Run `/gw:brainstorm` to start
 
 ### Option 2: Add to Existing Project
 
 ```bash
 # Copy skills to your project
-cp -r .claude/skills/github-workflows YOUR_PROJECT/.claude/skills/
+cp -r .claude/skills/gw YOUR_PROJECT/.claude/skills/
 cp workflows.json YOUR_PROJECT/
 ```
 
@@ -40,8 +44,8 @@ cp workflows.json YOUR_PROJECT/
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│  Brainstorm │────▶│    Plan     │────▶│    Work     │────▶│   Review    │
-│             │     │             │     │             │     │   Cycle     │
+│/gw:brainstorm────▶│  /gw:plan   │────▶│  /gw:work   │────▶│/gw:review-  │
+│             │     │             │     │             │     │    cycle    │
 │ Creates     │     │ Updates     │     │ Creates PR  │     │ Handles     │
 │ GitHub      │     │ issue with  │     │ linked to   │     │ feedback    │
 │ Issue       │     │ plan        │     │ issue       │     │             │
@@ -53,38 +57,64 @@ cp workflows.json YOUR_PROJECT/
                                               │ Approved │  │ Changes  │  │ Awaiting │
                                               │          │  │ Requested│  │ Review   │
                                               │ Merge +  │  │ Address  │  │ No action│
-                                              │ Close    │  │ + Push   │  │          │
+                                              │/gw:compound │ + Push   │  │          │
                                               └──────────┘  └──────────┘  └──────────┘
 ```
 
-## Available Commands
+## Commands
 
-| Command | Description |
-|---------|-------------|
-| `/workflows:brainstorm` | Explore a feature idea, create GitHub issue |
-| `/workflows:plan` | Create implementation plan, update issue |
-| `/workflows:work` | Implement feature, create PR |
-| `/workflows:review-cycle` | Handle PR review feedback |
+| Command | Wraps | GitHub Integration |
+|---------|-------|-------------------|
+| `/gw:brainstorm` | `/workflows:brainstorm` | Creates GitHub issue |
+| `/gw:plan` | `/workflows:plan` | Updates issue with plan |
+| `/gw:work` | `/workflows:work` | Creates PR linked to issue |
+| `/gw:review-cycle` | (standalone) | Handles PR review status |
+| `/gw:compound` | `/workflows:compound` | Links learning to issue/PR |
 
 ## Example Usage
 
 ```bash
 # 1. Start with an idea
-/workflows:brainstorm
-# Claude asks about your feature, creates issue #42
+/gw:brainstorm add user authentication
+# → Runs brainstorm workflow
+# → Creates GitHub issue #42
 
 # 2. Create implementation plan
-/workflows:plan
-# Claude creates detailed plan, updates issue #42
+/gw:plan
+# → Runs planning workflow
+# → Updates issue #42 with plan
 
 # 3. Implement the feature
-/workflows:work
-# Claude implements, creates PR linked to #42
+/gw:work
+# → Creates branch feat/42-user-auth
+# → Runs implementation
+# → Creates PR linked to #42
 
 # 4. Handle review feedback
-/workflows:review-cycle
-# Claude checks PR status, addresses feedback or merges
+/gw:review-cycle
+# → Checks PR status
+# → Addresses feedback or merges
+
+# 5. Capture learnings (optional)
+/gw:compound oauth token refresh
+# → Documents learning
+# → Links to issue/PR
 ```
+
+## How It Works
+
+Each `/gw:*` command:
+
+1. **Checks for compound-engineering plugin**
+   ```bash
+   CE_AVAILABLE=$(ls ~/.claude/plugins/cache/*/compound-engineering/*/commands/workflows/*.md 2>/dev/null | head -1)
+   ```
+
+2. **If available:** Runs the compound-engineering workflow, then adds GitHub integration
+
+3. **If not available:** Runs built-in workflow, then adds GitHub integration
+
+This means you get the full power of compound-engineering (research agents, reviewers, etc.) when available, with graceful fallback when not.
 
 ## Configuration
 
@@ -110,13 +140,14 @@ Edit `workflows.json` to customize:
 ## Project Structure
 
 ```
-.claude/skills/github-workflows/
-├── SKILL.md              # Router with principles
-└── workflows/
-    ├── brainstorm.md     # Feature exploration
-    ├── plan.md           # Implementation planning
-    ├── work.md           # PR creation
-    └── review-cycle.md   # Review handling
+.claude/skills/gw/
+├── SKILL.md              # Router and principles
+└── commands/
+    ├── brainstorm.md     # /gw:brainstorm
+    ├── plan.md           # /gw:plan
+    ├── work.md           # /gw:work
+    ├── review-cycle.md   # /gw:review-cycle
+    └── compound.md       # /gw:compound
 
 docs/
 ├── brainstorms/          # Feature brainstorm docs
@@ -128,10 +159,21 @@ workflows.json            # Configuration
 
 ## Security
 
-All skills validate inputs before shell use:
+All commands validate inputs before shell use:
 - Branch names: `^[a-zA-Z0-9/_-]+$`
 - Issue/PR numbers: `^[0-9]+$`
 - GitHub usernames: `^[a-zA-Z0-9_-]+$`
+
+## vs compound-engineering workflows
+
+| Feature | `/workflows:*` | `/gw:*` |
+|---------|---------------|---------|
+| Local docs | Yes | Yes |
+| GitHub issues | No | **Yes** |
+| GitHub PRs | Manual | **Automatic** |
+| Issue linking | No | **Yes** |
+| Review handling | Code review | **PR status** |
+| Requires compound-engineering | Yes | **Optional** |
 
 ## License
 

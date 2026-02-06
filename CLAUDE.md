@@ -4,26 +4,35 @@ This repository provides Claude Code skills for GitHub-integrated development wo
 
 ## Overview
 
-These skills connect the brainstorm → plan → work → review lifecycle with GitHub issues and PRs, enabling compound knowledge capture.
+The `/gw:*` commands wrap compound-engineering's `/workflows:*` commands with automatic GitHub issue/PR integration. If compound-engineering is not installed, built-in workflows are used instead.
 
-## Available Skills
+## Available Commands
 
-Run these commands in any project that has adopted these skills:
+| Command | Description |
+|---------|-------------|
+| `/gw:brainstorm` | Explore a feature idea, create GitHub issue |
+| `/gw:plan` | Create implementation plan, update issue |
+| `/gw:work` | Implement feature, create PR linked to issue |
+| `/gw:review-cycle` | Handle PR review feedback |
+| `/gw:compound` | Capture learnings, link to issue/PR |
 
-- `/workflows:brainstorm` - Explore a feature idea, creates GitHub issue
-- `/workflows:plan` - Create implementation plan, updates issue
-- `/workflows:work` - Begin implementation, creates PR
-- `/workflows:review-cycle` - Handle PR review feedback
+## Workflow
 
-## Configuration
-
-Edit `workflows.json` to customize labels, branch patterns, and paths.
+```
+/gw:brainstorm → /gw:plan → /gw:work → /gw:review-cycle
+      ↓              ↓           ↓            ↓
+   Issue #N     Update #N    PR → #N    Merge or iterate
+```
 
 ## Requirements
 
 - GitHub CLI (`gh`) must be installed and authenticated
 - Run `gh auth login` if not authenticated
 
+## Configuration
+
+Edit `workflows.json` to customize labels, branch patterns, and paths.
+
 ## Adding to a Project
 
-Copy `.claude/skills/github-workflows/` to your project's `.claude/skills/` directory.
+Copy `.claude/skills/gw/` to your project's `.claude/skills/` directory.

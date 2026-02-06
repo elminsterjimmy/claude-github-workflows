@@ -4,9 +4,36 @@ type: feat
 date: 2026-02-06
 brainstorm: docs/brainstorms/2026-02-06-github-workflow-integration-brainstorm.md
 deepened: 2026-02-06
+github_issue: 1
+status: implemented
 ---
 
 # feat: GitHub Workflow Integration Skills
+
+## Implementation Status
+
+**Completed:** 2026-02-06
+
+### Final Architecture Decision
+
+**Changed from `/workflows:*` to `/gw:*`** to avoid naming collision with compound-engineering plugin.
+
+The `/gw:*` commands:
+- Wrap compound-engineering's `/workflows:*` if available
+- Fall back to built-in workflow if not
+- Add GitHub issue/PR integration after core workflow
+
+### Commands Implemented
+
+| Command | File | Status |
+|---------|------|--------|
+| `/gw:brainstorm` | `.claude/skills/gw/commands/brainstorm.md` | Done |
+| `/gw:plan` | `.claude/skills/gw/commands/plan.md` | Done |
+| `/gw:work` | `.claude/skills/gw/commands/work.md` | Done |
+| `/gw:review-cycle` | `.claude/skills/gw/commands/review-cycle.md` | Done |
+| `/gw:compound` | `.claude/skills/gw/commands/compound.md` | Done |
+
+---
 
 ## Enhancement Summary
 
@@ -25,6 +52,7 @@ deepened: 2026-02-06
 - **Validate all inputs**: Branch names, issue numbers, GitHub API outputs before shell interpolation
 - **Accept duplication**: Inline validation/error patterns in each skill (simplicity > DRY)
 - **Remove YAGNI**: No optional state file, no primitives section, no hooks (use GitHub notifications)
+- **Renamed to /gw:*** to avoid collision with compound-engineering /workflows:*
 
 ---
 
