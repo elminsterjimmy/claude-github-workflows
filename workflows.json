@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "branch-pattern": "feat/{issue}-{slug}",
+  "labels": {
+    "brainstorm": ["brainstorm"],
+    "planned": ["planned"],
+    "in-progress": ["in-progress"]
+  },
+  "paths": {
+    "brainstorms": "docs/brainstorms/",
+    "plans": "docs/plans/",
+    "solutions": "docs/solutions/"
+  }
+}
