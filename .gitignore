@@ -1,0 +1,10 @@
+# OS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Local settings (users should customize)
+.claude/settings.local.json
