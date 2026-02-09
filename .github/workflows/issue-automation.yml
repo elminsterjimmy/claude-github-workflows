@@ -1,0 +1,70 @@
+name: Issue Automation
+
+on:
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  issues: write
+
+jobs:
+  auto-assign:
+    name: Auto-assign issue creator
+    if: github.event.action == 'labeled' && github.event.label.name == 'brainstorm'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign issue creator
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          CREATOR: ${{ github.event.issue.user.login }}
+        run: |
+          gh issue edit "$ISSUE_NUMBER" --add-assignee "$CREATOR" \
+            --repo "${{ github.repository }}"
+
+  validate-structure:
+    name: Validate issue structure
+    if: github.event.action == 'labeled' && github.event.label.name == 'brainstorm'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check required sections
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          missing=""
+
+          # Check for "What We're Building" or just "What"
+          if ! grep -qiE "^##[[:space:]]*(What We're Building|What)" <<< "$ISSUE_BODY"; then
+            missing="${missing}- \`## What We're Building\`\n"
+          fi
+
+          # Check for "Why"
+          if ! grep -qiE "^##[[:space:]]*Why" <<< "$ISSUE_BODY"; then
+            missing="${missing}- \`## Why\`\n"
+          fi
+
+          # Check for "Scope"
+          if ! grep -qiE "^##[[:space:]]*Scope" <<< "$ISSUE_BODY"; then
+            missing="${missing}- \`## Scope\`\n"
+          fi
+
+          if [ -n "$missing" ]; then
+            comment_body=$(printf "⚠️ **Missing required sections:**\n\n%b\nPlease update the issue to include these sections." "$missing")
+            gh issue comment "$ISSUE_NUMBER" --repo "${{ github.repository }}" \
+              --body "$comment_body"
+          fi
+
+  label-cleanup:
+    name: Clean up labels on transition
+    if: github.event.action == 'labeled' && github.event.label.name == 'planned'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove brainstorm label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          gh issue edit "$ISSUE_NUMBER" --remove-label "brainstorm" \
+            --repo "${{ github.repository }}" 2>/dev/null || true

@@ -1,3 +1,8 @@
+---
+name: gw-plan
+description: Create an implementation plan for a brainstormed feature, then update the GitHub issue with the plan.
+---
+
 # Plan Workflow
 
 Create an implementation plan for a brainstormed feature, then update the GitHub issue with the plan.
@@ -27,6 +32,22 @@ validate_slug() {
 }
 ```
 
+## Label Helpers
+
+```bash
+# Create label if it doesn't exist
+ensure_label() {
+    local label="$1"
+    local color="${2:-ededed}"
+    gh label list --search "$label" --json name --jq '.[].name' 2>/dev/null | grep -qx "$label" || \
+        gh label create "$label" --color "$color" 2>/dev/null || true
+}
+
+# Ensure required labels exist
+ensure_label "planned" "0E8A16"
+ensure_label "claude-code" "7C3AED"
+```
+
 ## Workflow
 
 ### Step 1: Detect Active Issue
@@ -48,7 +69,7 @@ fi
 # Still nothing? Ask user
 if [ -z "$ISSUE" ]; then
     echo "No active issue found."
-    echo "Provide issue number or run /workflows:brainstorm first."
+    echo "Provide issue number or run /gw-brainstorm first."
     exit 1
 fi
 
@@ -179,6 +200,7 @@ fi
 # Update issue with plan content and labels
 gh issue edit "$ISSUE" \
     --add-label "planned" \
+    --add-label "claude-code" \
     --body "$COMBINED" || {
     echo "Error: Failed to update issue. Check: gh auth status"
     exit 1
@@ -197,9 +219,9 @@ GitHub Issue: #{ISSUE}
 URL: https://github.com/{owner}/{repo}/issues/{ISSUE}
 Local plan: {PLAN_PATH}
 
-Labels: planned
+Labels: planned, claude-code
 
-Next step: Run /workflows:work to begin implementation
+Next step: Run /gw-work to begin implementation
 ```
 
 ## Success Criteria
@@ -209,13 +231,14 @@ Next step: Run /workflows:work to begin implementation
 - [ ] Local plan document created at `docs/plans/`
 - [ ] GitHub issue updated with plan content
 - [ ] Labels updated: `planned` added, `brainstorm` removed
-- [ ] User knows next step is `/workflows:work`
+- [ ] `claude-code` label preserved/added
+- [ ] User knows next step is `/gw-work`
 
 ## Error Handling
 
 | Error | Action |
 |-------|--------|
-| No issue found | "No active issue. Provide number or run /workflows:brainstorm" |
+| No issue found | "No active issue. Provide number or run /gw-brainstorm" |
 | Issue not on GitHub | "Issue #N not found on GitHub" |
 | Update fails | Show gh error, suggest checking auth |
 | Content too large | Truncate with note pointing to local doc |

@@ -1,3 +1,8 @@
+---
+name: gw-work
+description: Implement a planned feature, creating a feature branch and PR linked to the tracking issue.
+---
+
 # Work Workflow
 
 Implement a planned feature, creating a feature branch and PR linked to the tracking issue.
@@ -33,6 +38,22 @@ validate_slug() {
 }
 ```
 
+## Label Helpers
+
+```bash
+# Create label if it doesn't exist
+ensure_label() {
+    local label="$1"
+    local color="${2:-ededed}"
+    gh label list --search "$label" --json name --jq '.[].name' 2>/dev/null | grep -qx "$label" || \
+        gh label create "$label" --color "$color" 2>/dev/null || true
+}
+
+# Ensure required labels exist
+ensure_label "in-progress" "FBCA04"
+ensure_label "claude-code" "7C3AED"
+```
+
 ## Workflow
 
 ### Step 1: Detect Active Issue
@@ -50,7 +71,7 @@ fi
 
 if [ -z "$ISSUE" ]; then
     echo "No planned issue found."
-    echo "Provide issue number or run /workflows:plan first."
+    echo "Provide issue number or run /gw-plan first."
     exit 1
 fi
 
@@ -135,6 +156,7 @@ PR_TITLE="feat: $(echo "$ISSUE_TITLE" | sed 's/^brainstorm: //' | sed 's/^feat: 
 
 PR_URL=$(gh pr create \
     --title "$PR_TITLE" \
+    --label "claude-code" \
     --body "Closes #${ISSUE}
 
 ## Summary
@@ -171,7 +193,7 @@ echo "Created PR #${PR_NUM}: $PR_URL"
 
 ```bash
 # Add in-progress label to issue
-gh issue edit "$ISSUE" --add-label "in-progress" 2>/dev/null || true
+gh issue edit "$ISSUE" --add-label "in-progress" --add-label "claude-code" 2>/dev/null || true
 
 # Remove planned label
 gh issue edit "$ISSUE" --remove-label "planned" 2>/dev/null || true
@@ -187,9 +209,9 @@ URL: {PR_URL}
 Issue: #{ISSUE}
 Branch: {BRANCH}
 
-Labels updated: in-progress
+Labels: in-progress, claude-code
 
-Next step: Wait for review, then run /workflows:review-cycle
+Next step: Wait for review, then run /gw-review
 ```
 
 ## Success Criteria
@@ -198,15 +220,15 @@ Next step: Wait for review, then run /workflows:review-cycle
 - [ ] Feature branch created following naming convention
 - [ ] Implementation completed per plan
 - [ ] Changes committed with conventional message
-- [ ] PR created and linked to issue
+- [ ] PR created with `claude-code` label and linked to issue
 - [ ] Issue labels updated to `in-progress`
-- [ ] User knows next step is `/workflows:review-cycle`
+- [ ] User knows next step is `/gw-review`
 
 ## Error Handling
 
 | Error | Action |
 |-------|--------|
-| No issue found | "No planned issue. Provide number or run /workflows:plan" |
+| No issue found | "No planned issue. Provide number or run /gw-plan" |
 | Branch creation fails | "Error: Failed to create branch. Check for conflicts." |
 | Push fails | "Error: Failed to push. Check remote access." |
 | PR creation fails | Show gh error, suggest checking auth |

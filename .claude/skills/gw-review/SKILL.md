@@ -1,3 +1,8 @@
+---
+name: gw-review
+description: Handle PR review feedback - address changes requested, merge approved PRs, and capture learnings.
+---
+
 # Review Cycle Workflow
 
 Handle PR review feedback: address changes requested, merge approved PRs, and capture learnings.
@@ -27,6 +32,21 @@ validate_username() {
 }
 ```
 
+## Label Helpers
+
+```bash
+# Create label if it doesn't exist
+ensure_label() {
+    local label="$1"
+    local color="${2:-ededed}"
+    gh label list --search "$label" --json name --jq '.[].name' 2>/dev/null | grep -qx "$label" || \
+        gh label create "$label" --color "$color" 2>/dev/null || true
+}
+
+# Ensure required label exists
+ensure_label "claude-code" "7C3AED"
+```
+
 ## Workflow
 
 ### Step 1: Detect Current PR
@@ -38,7 +58,7 @@ validate_branch "$BRANCH"
 # Get PR info in single API call
 PR_INFO=$(gh pr view "$BRANCH" --json number,title,state,reviewDecision,reviews,body 2>/dev/null) || {
     echo "No PR found for branch: $BRANCH"
-    echo "Create a PR first with /workflows:work"
+    echo "Create a PR first with /gw-work"
     exit 1
 }
 
@@ -249,7 +269,7 @@ Changes pushed to PR #${PR_NUM}
 
 Re-review requested from @{REVIEWER}
 
-Next: Wait for review, then run /workflows:review-cycle again
+Next: Wait for review, then run /gw-review again
 ```
 
 ## Success Criteria
@@ -264,7 +284,7 @@ Next: Wait for review, then run /workflows:review-cycle again
 
 | Error | Action |
 |-------|--------|
-| No PR found | "No PR for branch. Run /workflows:work first" |
+| No PR found | "No PR for branch. Run /gw-work first" |
 | Merge fails | "Merge failed. Check conflicts or CI status." |
 | Can't close issue | Warning only, continue |
 | Can't request re-review | Warning only, continue |
