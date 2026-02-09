@@ -1,0 +1,107 @@
+name: PR Automation
+
+on:
+  pull_request:
+    types: [opened, closed]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  validate-linked-issue:
+    name: Validate linked issue
+    if: github.event.action == 'opened'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for linked issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # Extract issue number from "Closes #N", "Fixes #N", or "Resolves #N"
+          if [[ "$PR_BODY" =~ (Closes|Fixes|Resolves)[[:space:]]*#([0-9]+) ]]; then
+            ISSUE_NUMBER="${BASH_REMATCH[2]}"
+            echo "✅ PR links to issue #$ISSUE_NUMBER"
+          else
+            gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" \
+              --body "⚠️ **No linked issue found.**
+
+Please add \`Closes #N\` to the PR description to link this PR to an issue.
+
+This helps track work and automatically closes the issue when the PR merges."
+          fi
+
+  auto-label-issue:
+    name: Label linked issue as in-progress
+    if: github.event.action == 'opened'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add in-progress label to linked issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if [[ "$PR_BODY" =~ (Closes|Fixes|Resolves)[[:space:]]*#([0-9]+) ]]; then
+            ISSUE_NUMBER="${BASH_REMATCH[2]}"
+
+            # Add in-progress label
+            gh issue edit "$ISSUE_NUMBER" --add-label "in-progress" \
+              --repo "${{ github.repository }}" 2>/dev/null || true
+
+            # Remove planned label (transition to in-progress)
+            gh issue edit "$ISSUE_NUMBER" --remove-label "planned" \
+              --repo "${{ github.repository }}" 2>/dev/null || true
+
+            echo "✅ Issue #$ISSUE_NUMBER marked as in-progress"
+          fi
+
+  validate-template:
+    name: Validate PR template
+    if: github.event.action == 'opened'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR template sections
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          missing=""
+
+          # Check for Summary section
+          if ! grep -qiE "^##[[:space:]]*Summary" <<< "$PR_BODY"; then
+            missing="${missing}- \`## Summary\`\n"
+          fi
+
+          # Check for Changes section
+          if ! grep -qiE "^##[[:space:]]*Changes" <<< "$PR_BODY"; then
+            missing="${missing}- \`## Changes\`\n"
+          fi
+
+          if [ -n "$missing" ]; then
+            comment_body=$(printf "⚠️ **Missing PR template sections:**\n\n%b\nPlease follow the PR template structure for better reviewability." "$missing")
+            gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" \
+              --body "$comment_body"
+          fi
+
+  cleanup-on-merge:
+    name: Clean up on merge
+    if: github.event.action == 'closed' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove in-progress label from linked issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if [[ "$PR_BODY" =~ (Closes|Fixes|Resolves)[[:space:]]*#([0-9]+) ]]; then
+            ISSUE_NUMBER="${BASH_REMATCH[2]}"
+
+            # Remove in-progress label (issue will be closed by GitHub automatically)
+            gh issue edit "$ISSUE_NUMBER" --remove-label "in-progress" \
+              --repo "${{ github.repository }}" 2>/dev/null || true
+
+            echo "✅ Cleaned up labels for issue #$ISSUE_NUMBER"
+          fi

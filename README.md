@@ -107,6 +107,38 @@ Edit `workflows.json` to customize:
 }
 ```
 
+## GitHub Actions Automation
+
+This project includes GitHub Actions that automatically manage workflow state:
+
+### Issue Automation (`.github/workflows/issue-automation.yml`)
+
+| Trigger | Action |
+|---------|--------|
+| `brainstorm` label added | Auto-assigns issue to creator |
+| `brainstorm` label added | Validates required sections (What, Why, Scope) |
+| `planned` label added | Removes `brainstorm` label |
+
+### PR Automation (`.github/workflows/pr-automation.yml`)
+
+| Trigger | Action |
+|---------|--------|
+| PR opened | Checks for "Closes #N" link, warns if missing |
+| PR opened | Adds `in-progress` label to linked issue |
+| PR opened | Validates PR template sections |
+| PR merged | Removes `in-progress` label |
+
+### Label State Machine
+
+```
+brainstorm  →  planned  →  in-progress  →  [closed]
+    ↑             ↑            ↑              ↑
+  Issue        Plan         PR opens       PR merges
+  created      added        linked
+```
+
+Labels transition automatically as you use the workflow commands.
+
 ## Project Structure
 
 ```
@@ -117,6 +149,10 @@ Edit `workflows.json` to customize:
     ├── plan.md           # Implementation planning
     ├── work.md           # PR creation
     └── review-cycle.md   # Review handling
+
+.github/workflows/
+├── issue-automation.yml  # Issue label/assignment automation
+└── pr-automation.yml     # PR validation/label automation
 
 docs/
 ├── brainstorms/          # Feature brainstorm docs
