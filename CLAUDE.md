@@ -10,14 +10,22 @@ These skills connect the brainstorm → plan → work → review lifecycle with 
 
 Run these commands in any project that has adopted these skills:
 
-- `/workflows:brainstorm` - Explore a feature idea, creates GitHub issue
-- `/workflows:plan` - Create implementation plan, updates issue
-- `/workflows:work` - Begin implementation, creates PR
-- `/workflows:review-cycle` - Handle PR review feedback
+- `/gw-brainstorm` - Explore a feature idea, creates GitHub issue with `claude-code` label
+- `/gw-plan` - Create implementation plan, updates issue
+- `/gw-work` - Begin implementation, creates PR
+- `/gw-review` - Handle PR review feedback
 
-## Configuration
+## Labels
 
-Edit `workflows.json` to customize labels, branch patterns, and paths.
+All issues and PRs created by these skills are automatically labeled with `claude-code` for traceability. Additional labels:
+
+| Label | Applied by | Purpose |
+|-------|-----------|---------|
+| `claude-code` | All skills | Identifies Claude Code-created artifacts |
+| `brainstorm` | `/gw-brainstorm` | Initial exploration phase |
+| `planned` | `/gw-plan` | Implementation plan complete |
+| `in-progress` | `/gw-work` | Work has begun |
+| Custom labels | `/gw-brainstorm` | User-provided function labels |
 
 ## Requirements
 
@@ -26,7 +34,11 @@ Edit `workflows.json` to customize labels, branch patterns, and paths.
 
 ## Adding to a Project
 
-Copy `.claude/skills/github-workflows/` to your project's `.claude/skills/` directory.
+Copy the skill directories to your project:
+
+```bash
+cp -r .claude/skills/gw-* /path/to/your/project/.claude/skills/
+```
 
 ## GitHub Actions Automation
 
