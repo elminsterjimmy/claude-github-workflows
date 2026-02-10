@@ -26,14 +26,13 @@ gh auth status || gh auth login
 
 1. Click "Use this template" on GitHub
 2. Clone your new repository
-3. Run `/workflows:brainstorm` to start
+3. Run `/gw-brainstorm` to start
 
 ### Option 2: Add to Existing Project
 
 ```bash
 # Copy skills to your project
-cp -r .claude/skills/github-workflows YOUR_PROJECT/.claude/skills/
-cp workflows.json YOUR_PROJECT/
+cp -r .claude/skills/gw-* YOUR_PROJECT/.claude/skills/
 ```
 
 ## Workflow Lifecycle
@@ -61,28 +60,28 @@ cp workflows.json YOUR_PROJECT/
 
 | Command | Description |
 |---------|-------------|
-| `/workflows:brainstorm` | Explore a feature idea, create GitHub issue |
-| `/workflows:plan` | Create implementation plan, update issue |
-| `/workflows:work` | Implement feature, create PR |
-| `/workflows:review-cycle` | Handle PR review feedback |
+| `/gw-brainstorm` | Explore a feature idea, create GitHub issue |
+| `/gw-plan` | Create implementation plan, update issue |
+| `/gw-work` | Implement feature, create PR |
+| `/gw-review` | Handle PR review feedback |
 
 ## Example Usage
 
 ```bash
 # 1. Start with an idea
-/workflows:brainstorm
+/gw-brainstorm
 # Claude asks about your feature, creates issue #42
 
 # 2. Create implementation plan
-/workflows:plan
+/gw-plan
 # Claude creates detailed plan, updates issue #42
 
 # 3. Implement the feature
-/workflows:work
+/gw-work
 # Claude implements, creates PR linked to #42
 
 # 4. Handle review feedback
-/workflows:review-cycle
+/gw-review
 # Claude checks PR status, addresses feedback or merges
 ```
 
@@ -142,13 +141,15 @@ Labels transition automatically as you use the workflow commands.
 ## Project Structure
 
 ```
-.claude/skills/github-workflows/
-├── SKILL.md              # Router with principles
-└── workflows/
-    ├── brainstorm.md     # Feature exploration
-    ├── plan.md           # Implementation planning
-    ├── work.md           # PR creation
-    └── review-cycle.md   # Review handling
+.claude/skills/
+├── gw-brainstorm/
+│   └── SKILL.md          # Feature exploration
+├── gw-plan/
+│   └── SKILL.md          # Implementation planning
+├── gw-review/
+│   └── SKILL.md          # Review handling
+└── gw-work/
+    └── SKILL.md          # PR creation
 
 .github/workflows/
 ├── issue-automation.yml  # Issue label/assignment automation
