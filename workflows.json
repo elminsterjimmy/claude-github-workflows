@@ -1,14 +1,26 @@
 {
-  "version": "1.0.0",
+  "version": "2.0.0",
   "branch-pattern": "feat/{issue}-{slug}",
   "labels": {
     "brainstorm": ["brainstorm"],
     "planned": ["planned"],
+    "plan-reviewed": ["plan-reviewed"],
+    "needs-revision": ["needs-revision"],
     "in-progress": ["in-progress"]
   },
   "paths": {
     "brainstorms": "docs/brainstorms/",
     "plans": "docs/plans/",
     "solutions": "docs/solutions/"
+  },
+  "workflow": {
+    "phases": [
+      "brainstorm",
+      "plan",
+      "plan-review",
+      "work",
+      "pr-codereview",
+      "resolve-reviews"
+    ]
   }
 }
