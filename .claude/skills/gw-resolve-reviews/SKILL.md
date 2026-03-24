@@ -232,7 +232,33 @@ For each comment that requires action:
 4. **Make the change** following documented patterns
 5. **Track completion** for the commit message
 
-### Step 6: Verify Pipeline Requirements
+### Step 6: Update Architecture Documentation (If Needed)
+
+After addressing review comments, check whether any changes affect the project's architecture or structure. Review comments sometimes request structural refactors, new abstractions, or pattern changes that make existing docs stale.
+
+**Triggers — update docs when review changes:**
+- Added or removed files, modules, or packages
+- Changed entry points, request flow, or routing
+- Introduced new integrations, protocols, or APIs
+- Modified deployment or infrastructure configuration
+- Changed core patterns, abstractions, or conventions
+
+**Documents to check and update:**
+
+| Document | Update when |
+|----------|------------|
+| `CLAUDE.md` | Architecture section, file tree, key patterns, or env vars are stale |
+| `README.md` | Project overview, architecture tree, or feature list is outdated |
+| Architecture docs (e.g. `docs/architecture/`) | Technical flows or diagrams no longer match the code |
+
+**Rules:**
+1. Read the existing doc before editing — understand its structure
+2. Make **minimal, surgical edits** — only update affected sections
+3. Match the existing tone, formatting, and detail level
+4. Stage doc updates alongside code changes in the same commit
+5. Skip this step entirely for non-structural changes (style fixes, variable renames, test additions, comment updates)
+
+### Step 7: Verify Pipeline Requirements
 
 Before committing, ensure all pipeline requirements are met:
 
@@ -266,7 +292,7 @@ echo ""
 - If coverage fails, add tests for new/modified code
 - Check coverage report: `core/target/site/jacoco/index.html`
 
-### Step 7: Commit Changes
+### Step 8: Commit Changes
 
 After addressing all comments:
 
@@ -287,7 +313,7 @@ PR #${PR_NUM}"
 git push
 ```
 
-### Step 8: Reply to Comments (Optional)
+### Step 9: Reply to Comments (Optional)
 
 For significant changes, reply to the comment threads:
 
@@ -299,7 +325,7 @@ gh pr comment "$PR_NUM" --body "Addressed all review feedback:
 - {Change 3}"
 ```
 
-### Step 9: Compound Knowledge
+### Step 10: Compound Knowledge
 
 After resolving all comments, capture any learnings discovered during the resolution process.
 
@@ -400,7 +426,7 @@ Captured learnings from PR #${PR_NUM} review feedback."
 git push
 ```
 
-### Step 10: Output Results
+### Step 11: Output Results
 
 ```
 === Review Resolution Summary ===
@@ -437,6 +463,7 @@ Next steps:
 - [ ] All review submission feedback fetched
 - [ ] Project knowledge searched for relevant solutions
 - [ ] Each actionable comment addressed
+- [ ] Architecture docs (`CLAUDE.md`, `README.md`, arch docs) updated if structural changes were made
 - [ ] **Pipeline requirements verified (tests + coverage)**
 - [ ] Changes committed with descriptive message
 - [ ] Changes pushed to remote

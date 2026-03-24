@@ -139,7 +139,33 @@ Implements the feature as specified in the plan.
 Closes #${ISSUE}"
 ```
 
-### Step 5: Push to Remote
+### Step 5: Update Architecture Documentation (If Needed)
+
+After implementation, check whether the changes affect the project's architecture or structure. If so, update the relevant documentation.
+
+**Triggers — update docs when:**
+- New files, modules, or packages were added or removed
+- Entry points, request flow, or routing changed
+- New integrations, protocols, or APIs introduced
+- Deployment or infrastructure configuration changed
+- Core patterns, abstractions, or conventions changed
+
+**Documents to check and update:**
+
+| Document | Update when |
+|----------|------------|
+| `CLAUDE.md` | Architecture section, file tree, key patterns, or env vars are stale |
+| `README.md` | Project overview, architecture tree, or feature list is outdated |
+| Architecture docs (e.g. `docs/architecture/`) | Technical flows or diagrams no longer match the code |
+
+**Rules:**
+1. Read the existing doc before editing — understand its structure
+2. Make **minimal, surgical edits** — only update affected sections
+3. Match the existing tone, formatting, and detail level
+4. Stage doc updates alongside code changes in the same commit
+5. Skip this step entirely for internal-only changes (bug fixes, refactors with no structural change, test-only changes)
+
+### Step 6: Push to Remote
 
 ```bash
 git push -u origin "$BRANCH" || {
@@ -148,7 +174,7 @@ git push -u origin "$BRANCH" || {
 }
 ```
 
-### Step 6: Create Pull Request
+### Step 7: Create Pull Request
 
 ```bash
 # Get clean title for PR
@@ -189,7 +215,7 @@ validate_number "$PR_NUM"
 echo "Created PR #${PR_NUM}: $PR_URL"
 ```
 
-### Step 7: Update Issue Labels
+### Step 8: Update Issue Labels
 
 ```bash
 # Add in-progress label to issue
@@ -199,7 +225,7 @@ gh issue edit "$ISSUE" --add-label "in-progress" --add-label "claude-code" 2>/de
 gh issue edit "$ISSUE" --remove-label "planned" 2>/dev/null || true
 ```
 
-### Step 8: Output Results
+### Step 9: Output Results
 
 ```
 Implementation complete!
@@ -220,6 +246,7 @@ Next step: Wait for review, then run /gw-review
 - [ ] Feature branch created following naming convention
 - [ ] Implementation completed per plan
 - [ ] Changes committed with conventional message
+- [ ] Architecture docs (`CLAUDE.md`, `README.md`, arch docs) updated if structural changes were made
 - [ ] PR created with `claude-code` label and linked to issue
 - [ ] Issue labels updated to `in-progress`
 - [ ] User knows next step is `/gw-review`
